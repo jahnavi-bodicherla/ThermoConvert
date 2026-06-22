@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThermoLab — Premium Temperature Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌡️</div>
+    <div>
+      <div class="logo-text">ThermoLab</div>
+      <div class="logo-sub">Temperature Intelligence</div>
+    </div>
+  </div>
+  <div class="hdr-btns">
+    <button class="ibtn" id="btn-voice" onclick="toggleVoice()" aria-label="Voice input">
+      🎙️<span class="tip">Voice Input (V)</span>
+    </button>
+    <button class="ibtn" id="btn-hist" onclick="toggleHistory()" aria-label="Toggle history">
+      🕐<span class="tip">History (H)</span>
+    </button>
+    <button class="ibtn" id="btn-expcsv" onclick="exportHistory('csv')" aria-label="Export CSV">
+      📄<span class="tip">Export CSV</span>
+    </button>
+    <button class="ibtn" id="btn-expjson" onclick="exportHistory('json')" aria-label="Export JSON">
+      📦<span class="tip">Export JSON</span>
+    </button>
+    <button class="ibtn" id="btn-reset-all" onclick="resetAll()" aria-label="Reset everything">
+      🔄<span class="tip">Reset All (R)</span>
+    </button>
+    <button class="ibtn" id="btn-theme" onclick="toggleTheme()" aria-label="Toggle theme">
+      🌙<span class="tip">Toggle Theme (T)</span>
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-grid">
+
+  <!-- LEFT -->
+  <div>
+    <div class="card conv-card">
+      <div class="stitle">Temperature Converter</div>
+
+      <!-- MODE -->
+      <div class="mode-row">
+        <button class="mbtn on" id="mbtn-std" onclick="setMode('std')" aria-pressed="true">⚡ Standard</button>
+        <button class="mbtn" id="mbtn-live" onclick="setMode('live')" aria-pressed="false">🔴 Live Mode</button>
+      </div>
+
+      <!-- INPUTS -->
+      <div class="in-row">
+        <div class="ig">
+          <div class="ilabel">From</div>
+          <div class="sel-wrap">
+            <select class="usel" id="from-u" aria-label="From unit">
+              <option value="C">Celsius (°C)</option>
+              <option value="F">Fahrenheit (°F)</option>
+              <option value="K">Kelvin (K)</option>
+            </select>
+            <span class="sarr">▾</span>
+          </div>
+          <input class="tinput" id="tinput" type="number" placeholder="0.00" step="any" autocomplete="off" aria-label="Temperature to convert" inputmode="decimal">
+        </div>
+        <div class="sw-col">
+          <button class="btn-sw" id="btn-sw" onclick="swapUnits()" title="Swap (S)" aria-label="Swap units">⇄</button>
+        </div>
+        <div class="ig">
+          <div class="ilabel">To</div>
+          <div class="sel-wrap">
+            <select class="usel" id="to-u" aria-label="To unit">
+              <option value="C">Celsius (°C)</option>
+              <option value="F">Fahrenheit (°F)</option>
+              <option value="K" selected>Kelvin (K)</option>
+            </select>
+            <span class="sarr">▾</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRECISION -->
+      <div class="prec-row">
+        <span class="prec-lbl">Decimal places:</span>
+        <input type="range" class="prec-sl" id="prec" min="0" max="8" value="2" aria-label="Decimal precision">
+        <span class="prec-val" id="prec-val">2</span>
+      </div>
+
+      <!-- ERROR -->
+      <div class="errmsg" id="errmsg" role="alert">
+        <span>⚠️</span><span id="errtxt"></span>
+      </div>
+
+      <!-- CONVERT BTN -->
+      <button class="cbtn" id="cbtn" onclick="handleConvert(event)" aria-label="Convert temperature">
+        Convert Temperature →
+      </button>
+
+      <!-- RESULT -->
+      <div class="res-box" id="res-box" aria-live="polite" aria-atomic="true">
+        <div class="res-ph" id="res-ph">Enter a value and press Convert</div>
+        <div id="res-content" style="display:none;width:100%;text-align:center">
+          <div class="res-val" id="res-val"></div>
+          <div class="res-lbl" id="res-lbl"></div>
+          <div class="res-fml" id="res-fml"></div>
+          <div class="res-acts">
+            <button class="sbtn" onclick="copyResult()" aria-label="Copy result">📋 Copy</button>
+            <button class="sbtn" onclick="speakResult()" aria-label="Speak result">🔊 Read</button>
+            <button class="sbtn" onclick="saveToFav()" aria-label="Save to favourites">⭐ Save</button>
+            <button class="sbtn" onclick="resetForm()" aria-label="Reset">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALL UNITS -->
+      <div class="all-u" id="all-u">
+        <div class="au-title">All Units</div>
+        <div class="chips">
+          <div class="chip"><div class="chip-u">Celsius</div><div class="chip-v" id="chip-c">—</div></div>
+          <div class="chip"><div class="chip-u">Fahrenheit</div><div class="chip-v" id="chip-f">—</div></div>
+          <div class="chip"><div class="chip-u">Kelvin</div><div class="chip-v" id="chip-k">—</div></div>
+        </div>
+      </div>
+
+      <!-- SHORTCUTS -->
+      <div class="kbds">
+        <span class="kbd"><code>Enter</code> Convert</span>
+        <span class="kbd"><code>S</code> Swap</span>
+        <span class="kbd"><code>T</code> Theme</span>
+        <span class="kbd"><code>V</code> Voice</span>
+        <span class="kbd"><code>H</code> History</span>
+        <span class="kbd"><code>R</code> Reset</span>
+        <span class="kbd"><code>Esc</code> Clear</span>
+      </div>
+    </div>
+
+    <!-- HISTORY PANEL -->
+    <div class="card hist-panel" id="hist-panel" style="display:none">
+      <div class="hist-hdr">
+        <div class="stitle" style="margin-bottom:0">History</div>
+        <div class="hist-acts">
+          <button class="sbtn" onclick="exportHistory('csv')">⬇️ CSV</button>
+          <button class="sbtn" onclick="exportHistory('json')">⬇️ JSON</button>
+          <button class="sbtn" onclick="clearHistory()" style="color:var(--rd)">🗑️ Clear</button>
+        </div>
+      </div>
+      <input type="search" class="hsearch" id="hsearch" placeholder="🔍 Search conversions..." oninput="filterHist()" aria-label="Search history">
+      <div class="hlist" id="hlist" role="list">
+        <div class="hempty">No conversions yet — start converting!</div>
+      </div>
+    </div>
+
+    <!-- FAVOURITES PANEL -->
+    <div class="card hist-panel" id="fav-panel" style="display:none;margin-top:16px">
+      <div class="hist-hdr">
+        <div class="stitle" style="margin-bottom:0">⭐ Favourites</div>
+        <button class="sbtn" onclick="clearFavs()" style="color:var(--rd)">🗑️ Clear</button>
+      </div>
+      <div class="hlist" id="fav-list" role="list">
+        <div class="hempty">No favourites saved yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- THERMOMETER -->
+    <div class="card thermo-card">
+      <div class="stitle">Live Thermometer</div>
+      <div class="therm-wrap">
+        <svg class="therm-svg" width="58" height="220" viewBox="0 0 58 220">
+          <defs>
+            <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7C3AED"/>
+              <stop offset="100%" stop-color="#06B6D4"/>
+            </linearGradient>
+            <clipPath id="tc"><rect x="22" y="18" width="14" height="158" rx="7"/></clipPath>
+          </defs>
+          <!-- tube bg -->
+          <rect x="22" y="18" width="14" height="158" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+          <!-- mercury -->
+          <g clip-path="url(#tc)">
+            <rect id="mercury" x="22" y="176" width="14" height="0" fill="url(#mg)" opacity="0.88" style="transition:y 0.7s cubic-bezier(0.4,0,0.2,1),height 0.7s cubic-bezier(0.4,0,0.2,1)"/>
+          </g>
+          <!-- bulb -->
+          <circle cx="29" cy="192" r="19" fill="url(#mg)" opacity="0.9"/>
+          <circle cx="29" cy="192" r="14" fill="url(#mg)"/>
+          <!-- ticks -->
+          <line x1="36" y1="28" x2="43" y2="28" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <line x1="36" y1="67" x2="43" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <line x1="36" y1="106" x2="43" y2="106" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <line x1="36" y1="145" x2="43" y2="145" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <!-- highlight -->
+          <rect x="25" y="23" width="4" height="148" rx="2" fill="rgba(255,255,255,0.14)"/>
+        </svg>
+        <div class="therm-lbls">
+          <span>🔥 Extreme</span>
+          <span>☀️ Hot</span>
+          <span>🌤️ Warm</span>
+          <span>❄️ Cold</span>
+        </div>
+      </div>
+      <div class="badge" id="badge" style="background:rgba(124,58,237,0.14);color:#9B59F8;border:1px solid rgba(124,58,237,0.3)">
+        Enter a temperature
+      </div>
+    </div>
+
+    <!-- ZONES -->
+    <div class="card zone-card">
+      <div class="stitle">Temperature Zones</div>
+      <div class="zone-grid">
+        <div class="zone" id="z-abszero" style="background:rgba(139,92,246,0.09);border-color:rgba(139,92,246,0.22)">
+          <div class="ze">⚫</div><div class="zl" style="color:#8B5CF6">Absolute Zero</div><div class="zr">≤ −273°C</div>
+        </div>
+        <div class="zone" id="z-freeze" style="background:rgba(6,182,212,0.09);border-color:rgba(6,182,212,0.22)">
+          <div class="ze">🧊</div><div class="zl" style="color:#06B6D4">Freezing</div><div class="zr">&lt; 0°C</div>
+        </div>
+        <div class="zone" id="z-cold" style="background:rgba(59,130,246,0.09);border-color:rgba(59,130,246,0.22)">
+          <div class="ze">🥶</div><div class="zl" style="color:#3B82F6">Cold</div><div class="zr">0–10°C</div>
+        </div>
+        <div class="zone" id="z-cool" style="background:rgba(16,185,129,0.09);border-color:rgba(16,185,129,0.22)">
+          <div class="ze">😌</div><div class="zl" style="color:#10B981">Cool</div><div class="zr">10–20°C</div>
+        </div>
+        <div class="zone" id="z-warm" style="background:rgba(245,158,11,0.09);border-color:rgba(245,158,11,0.22)">
+          <div class="ze">🌤️</div><div class="zl" style="color:#F59E0B">Moderate</div><div class="zr">20–30°C</div>
+        </div>
+        <div class="zone" id="z-hot" style="background:rgba(239,68,68,0.09);border-color:rgba(239,68,68,0.22)">
+          <div class="ze">🔥</div><div class="zl" style="color:#EF4444">Hot / Extreme</div><div class="zr">&gt; 30°C</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="card ref-card">
+      <div class="stitle">Reference Points</div>
+      <div class="rfi"><div class="rfl"><span>⚫</span><span class="rfn">Absolute Zero</span></div><span class="rfv" id="ref-abs">—</span></div>
+      <div class="rfi"><div class="rfl"><span>💧</span><span class="rfn">Water Freezes</span></div><span class="rfv" id="ref-freeze">—</span></div>
+      <div class="rfi"><div class="rfl"><span>🧑</span><span class="rfn">Human Body</span></div><span class="rfv" id="ref-body">—</span></div>
+      <div class="rfi"><div class="rfl"><span>♨️</span><span class="rfn">Water Boils</span></div><span class="rfv" id="ref-boil">—</span></div>
+      <div class="rfi"><div class="rfl"><span>🌋</span><span class="rfn">Lava</span></div><span class="rfv" id="ref-lava">—</span></div>
+      <div class="rfi"><div class="rfl"><span>☀️</span><span class="rfn">Sun Surface</span></div><span class="rfv" id="ref-sun">—</span></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>ThermoLab — Exact scientific formulas · LocalStorage · Voice · Export · Dark/Light</footer>
+</div>
+
+<!-- TOASTS -->
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
